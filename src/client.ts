@@ -1,19 +1,13 @@
-import WebSocket from "ws";
-import fs from "fs";
-import elliptic from "elliptic";
-import {
-  keyGen,
-  getKeyPath,
-  IClientNewKey,
-  KeyData,
-  ECCurveType,
-} from "./key";
+import WebSocket from 'ws';
+import fs from 'fs';
+import elliptic from 'elliptic';
+import { keyGen, getKeyPath, IClientNewKey, KeyData, ECCurveType } from './key';
 import {
   Logger,
   Checks,
   LogLevelDesc,
   LoggerProvider,
-} from "@hyperledger/cactus-common";
+} from '@hyperledger/cactus-common';
 
 interface WSClientOptions {
   host: string;
@@ -22,8 +16,8 @@ interface WSClientOptions {
   logLevel?: LogLevelDesc;
 }
 
-export class WebSocketClient {
-  public readonly className = "WebSocketClient";
+export class WsWalletClient {
+  public readonly className = 'WsWalletClient';
   private readonly log: Logger;
   private readonly host: string;
   private ecdsaCurves: IEcdsaCurves;
@@ -35,12 +29,12 @@ export class WebSocketClient {
     const fnTag = `${this.className}#constructor()`;
     Checks.truthy(opts, `${fnTag} arg options`);
     this.log = LoggerProvider.getOrCreate({
-      label: "WebSocketClient",
-      level: opts.logLevel || "INFO",
+      label: 'WsWalletClient',
+      level: opts.logLevel || 'INFO',
     });
     Checks.nonBlankString(opts.host, `${this.className}:opts.host`);
     this.host = opts.host;
-    opts.keyName = opts.keyName || "default";
+    opts.keyName = opts.keyName || 'default';
     this.keyData = this.initKey({ keyName: opts.keyName, curve: opts.curve });
   }
 
@@ -61,14 +55,14 @@ export class WebSocketClient {
     }
     info.push(`extracting key '${args.keyName}' from key store`);
     this.keyName = args.keyName;
-    const keyData = JSON.parse(fs.readFileSync(keyPath, "utf8"));
+    const keyData = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
     const curve = keyData.curve;
     if (args.curve && curve !== args.curve) {
       info.push(
         `the requested curve type (${args.curve}) is different than the existing key: ${curve}`,
       );
     }
-    const result = info.join("\n");
+    const result = info.join('\n');
     this.log.debug(`${fnTag} ${result}`);
     return keyData;
   }
@@ -94,9 +88,10 @@ export class WebSocketClient {
     await this.close();
     try {
       //const { pubKeyHex } = jsrsasign.KEYUTIL.getKey(this.keyData.pubKey);
-      const signature = sign(Buffer.from(sessionId, "hex"),this.keyData).toString(
-        "hex",
-      );
+      const signature = sign(
+        Buffer.from(sessionId, 'hex'),
+        this.keyData,
+      ).toString('hex');
       const wsHostUrl = `${this.host}`;
       this.log.info(`${fnTag} Open new WebSocket to host ${this.host}`);
       this.log.info(`${fnTag} sessionId: ${sessionId}`);
@@ -105,10 +100,10 @@ export class WebSocketClient {
         headers: {
           signature,
           sessionId,
-          crv: this.keyData.curve
-        }
-      }
-      this.ws = new WebSocket(this.host,wsOpts);
+          crv: this.keyData.curve,
+        },
+      };
+      this.ws = new WebSocket(this.host, wsOpts);
       await waitForSocketState(this.ws, this.ws.OPEN);
     } catch (error) {
       throw new Error(
@@ -124,11 +119,11 @@ export class WebSocketClient {
     };
 
     this.ws.onclose = function incoming() {
-      log.info(`web-socket connection to ${host} closed for key ${keyName}`)
+      log.info(`web-socket connection to ${host} closed for key ${keyName}`);
       console.log(`Web socket connection to ${host} closed for key ${keyName}`);
     };
-    this.ws.on("message", function incoming(message: Buffer) {
-      const signature = sign(message,keyData);
+    this.ws.on('message', function incoming(message: Buffer) {
+      const signature = sign(message, keyData);
       log.info(`Send signature to web socket server ${ws.url}`);
       ws.send(signature);
     });
@@ -139,7 +134,7 @@ export class WebSocketClient {
   async close(): Promise<void> {
     if (this.ws) {
       this.ws.close();
-      console.log('closing web socket')
+      console.log('closing web socket');
       await waitForSocketState(this.ws, this.ws.CLOSED);
     }
   }
@@ -153,7 +148,7 @@ export class WebSocketClient {
   }
 }
 
-const jsrsasign = require("jsrsasign");
+const jsrsasign = require('jsrsasign');
 type IEcdsaCurves = {
   [key: string]: elliptic.ec;
 };
@@ -173,7 +168,7 @@ function sign(digest: Buffer, keyData: KeyData): Buffer {
   //const fnTag = `${this.className}#sign`;
   const { prvKeyHex } = jsrsasign.KEYUTIL.getKey(keyData.key);
   const ecdsa = ecdsaCurves[keyData.curve];
-  const signKey = ecdsa.keyFromPrivate(prvKeyHex, "hex");
+  const signKey = ecdsa.keyFromPrivate(prvKeyHex, 'hex');
   const sig = ecdsa.sign(digest, signKey);
   const signature = Buffer.from(sig.toDER());
   return signature;

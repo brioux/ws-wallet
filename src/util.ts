@@ -25,8 +25,10 @@ export class Util {
           },
         }),
         winston.format.printf((info) => {
-          return `[ ${info.label} ] [ ${info.level.toUpperCase()} ] ${info.class}::${info.fnTag}() : ${info.message}`;
-        })
+          return `[ ${info.label} ] [ ${info.level.toUpperCase()} ] ${
+            info.class
+          }::${info.fnTag}() : ${info.message}`;
+        }),
       ),
       transports: [new winston.transports.Console()],
     });
@@ -37,7 +39,7 @@ export class Util {
     return classLogger.child({ fnTag: fnTag });
   }
 
-  static isEmptyString(candidate:string){
-      return candidate === undefined || candidate.length === 0;
+  static isEmptyString(candidate: string) {
+    return candidate === undefined || candidate.length === 0;
   }
 }
