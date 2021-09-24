@@ -17,6 +17,6 @@ npm install
 npm run build
 ```
 
-* Expose CLI command (ws-client)
+* Expose CLI command (ws-wallet)
 ```
 npm run local

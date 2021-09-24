@@ -1,8 +1,8 @@
 import yargs from 'yargs';
-import { WsWalletClient } from '../src/client';
+import { WsWallet } from '../src/wallet';
 import { keyGen, getPubKeyHex, listKeys, IClientNewKey } from '../src/key';
 
-let usage = '\nUsage: ws-client\n';
+let usage = '\nUsage: ws-wallet-cli\n';
 usage +=
   '\tnew-key <keyname> [<curve>]\t' +
   "Generate a new key with optional curve: 'p256' | 'p384'\n";
@@ -26,7 +26,7 @@ function showHelp() {
 }
 
 async function getClient(host, sessionId, args: IClientNewKey) {
-  const wsClient = new WsWalletClient({ host, keyName: args.keyName });
+  const wsClient = new WsWallet({ host, keyName: args.keyName });
   const signature = wsClient.getKey(args, sessionId);
   wsClient.open(sessionId);
 }

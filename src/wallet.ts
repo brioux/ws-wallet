@@ -9,15 +9,15 @@ import {
   LoggerProvider,
 } from '@hyperledger/cactus-common';
 
-interface WSClientOptions {
+export interface WsWalletOpts {
   host: string;
   keyName?: string;
   curve?: ECCurveType;
   logLevel?: LogLevelDesc;
 }
 
-export class WsWalletClient {
-  public readonly className = 'WsWalletClient';
+export class WsWallet {
+  public readonly className = 'WsWallet';
   private readonly log: Logger;
   private readonly host: string;
   private ecdsaCurves: IEcdsaCurves;
@@ -25,11 +25,11 @@ export class WsWalletClient {
   private keyData: KeyData;
   private ws?: WebSocket;
 
-  constructor(opts: WSClientOptions) {
+  constructor(opts: WsWalletOpts) {
     const fnTag = `${this.className}#constructor()`;
     Checks.truthy(opts, `${fnTag} arg options`);
     this.log = LoggerProvider.getOrCreate({
-      label: 'WsWalletClient',
+      label: 'WsWallet',
       level: opts.logLevel || 'INFO',
     });
     Checks.nonBlankString(opts.host, `${this.className}:opts.host`);
