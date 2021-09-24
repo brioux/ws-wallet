@@ -2,7 +2,7 @@ import yargs from 'yargs';
 import { WsWallet } from '../src/wallet';
 import { keyGen, getPubKeyHex, listKeys, IClientNewKey } from '../src/key';
 
-let usage = '\nUsage: ws-wallet-cli\n';
+let usage = '\nUsage: ws-wallet\n';
 usage +=
   '\tnew-key <keyname> [<curve>]\t' +
   "Generate a new key with optional curve: 'p256' | 'p384'\n";

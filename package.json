@@ -1,21 +1,21 @@
 {
   "name": "ws-wallet",
-  "version": "1.0.2",
+  "version": "1.0.14",
   "description": "Node.js client on Docker",
   "author": "Betrand Rioux <bertrand.roiux@gmail.com>",
-  "main": "./dist/bin/index.js",
+  "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "dev": "ts-node app.ts",
     "build": "tsc",
     "start": "node ./dist/app.js",
-    "local": "sudo npm i -g && ws-wallet-cli",
+    "local": "sudo npm i -g && ws-wallet",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"bin/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "compile": "tsc --project tsconfig.json",
     "prepare": "npm run build",
-    "//prepublishOnly" : "npm test && npm run lint",
+    "//prepublishOnly": "npm test && npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
@@ -23,7 +23,7 @@
     "dist/**/*"
   ],
   "bin": {
-    "ws-wallet-cli": "./dist/bin/index.js"
+    "ws-wallet": "./dist/bin/index.js"
   },
   "dependencies": {
     "@hyperledger/cactus-common": "0.9.0",

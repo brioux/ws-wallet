@@ -9,11 +9,22 @@ import {
   LoggerProvider,
 } from '@hyperledger/cactus-common';
 
+
+
 export interface WsWalletOpts {
   host: string;
   keyName?: string;
   curve?: ECCurveType;
   logLevel?: LogLevelDesc;
+}
+
+export interface WsWalletRes {
+  signature: Buffer;
+  index: number;
+}
+export interface WsWalletReq {
+  digest: Buffer;
+  index: number;
 }
 
 export class WsWallet {
@@ -83,50 +94,51 @@ export class WsWallet {
   /**
    * @description Closes existing and open new websocket connection for client
    */
-  async open(sessionId: string): Promise<void> {
+  async open(sessionId: string): Promise<string> {
     const fnTag = `${this.className}#open`;
     await this.close();
     try {
       //const { pubKeyHex } = jsrsasign.KEYUTIL.getKey(this.keyData.pubKey);
-      const signature = sign(
+      const sessionSignature = sign(
         Buffer.from(sessionId, 'hex'),
         this.keyData,
       ).toString('hex');
       const wsHostUrl = `${this.host}`;
-      this.log.info(`${fnTag} Open new WebSocket to host ${this.host}`);
+      this.log.info(`${fnTag} open new web-socket to host ${this.host}`);
       this.log.info(`${fnTag} sessionId: ${sessionId}`);
-      this.log.info(`${fnTag} signature: ${signature}`);
+      this.log.info(`${fnTag} signature: ${sessionSignature}`);
       const wsOpts = {
         headers: {
-          signature,
-          sessionId,
-          crv: this.keyData.curve,
+          'x-signature': sessionSignature,
+          'x-session-id': sessionId,
+          'x-pub-key-pem': JSON.stringify(this.keyData.pubKey),
         },
       };
       this.ws = new WebSocket(this.host, wsOpts);
       await waitForSocketState(this.ws, this.ws.OPEN);
+      const { host, keyName, ws, log, keyData } = this;
+      this.ws.onerror = function () {
+        //log.info(`web-socket connection established`)
+      };
+      this.ws.onopen = function () {
+        log.info(`web-socket connection opened with ${host} for key ${keyName}`);
+      };
+
+      this.ws.onclose = function incoming() {
+        log.info(`web-socket connection to ${host} closed for key ${keyName}`);
+      };
+      this.ws.on('message', function incoming(digest:Buffer) {//message: WsWalletReq
+        const signature = sign(digest, keyData);
+        //const resp:WsWalletRes = {signature,index: message.index}
+        log.info(`send signature to web socket server ${ws.url}`);
+        ws.send(signature);
+      });
+      return sessionSignature;
     } catch (error) {
       throw new Error(
-        `Error creating web-socket connection to host ${this.host}: ${error}`,
+        `error creating web-socket connection to host ${this.host}: ${error}`,
       );
     }
-    const { host, keyName, ws, log, keyData } = this;
-    this.ws.onerror = function () {
-      //log.info(`web-socket connection established`)
-    };
-    this.ws.onopen = function () {
-      log.info(`web-socket connection opened with ${host} for key ${keyName}`);
-    };
-
-    this.ws.onclose = function incoming() {
-      log.info(`web-socket connection to ${host} closed for key ${keyName}`);
-      console.log(`Web socket connection to ${host} closed for key ${keyName}`);
-    };
-    this.ws.on('message', function incoming(message: Buffer) {
-      const signature = sign(message, keyData);
-      log.info(`Send signature to web socket server ${ws.url}`);
-      ws.send(signature);
-    });
   }
   /**
    * @description : close the WebSocket
@@ -134,7 +146,7 @@ export class WsWallet {
   async close(): Promise<void> {
     if (this.ws) {
       this.ws.close();
-      console.log('closing web socket');
+      this.log.info('closing web socket');
       await waitForSocketState(this.ws, this.ws.CLOSED);
     }
   }
@@ -179,7 +191,7 @@ function sign(digest: Buffer, keyData: KeyData): Buffer {
  * @param socket The socket whose `readyState` is being watched
  * @param state The desired `readyState` for the socket
  */
-export function waitForSocketState(
+function waitForSocketState(
   socket: WebSocket,
   state: number,
 ): Promise<void> {
@@ -193,7 +205,7 @@ export function waitForSocketState(
         }
       });
     } catch (err) {
-      reject(`Error wating for socket state ${state}: ${err} `);
+      reject(`Error waiting for socket state ${state}: ${err} `);
     }
   });
 }

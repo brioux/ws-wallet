@@ -21,7 +21,7 @@ export interface KeyData {
   pubKey: string;
 }
 
-const walletPath = `/Users/bertrandrioux/wallet`;
+const walletPath = `${__dirname}/wallet`;
 if (!fs.existsSync(walletPath)) {
   console.log('Make directory to store keys at ${walletPath}');
   fs.mkdirSync(walletPath);
