@@ -9,9 +9,17 @@
     "build": "tsc",
     "start": "node ./dist/app.js",
     "local": "sudo npm i -g && ws-client",
-    "lint": "tslint -c ./tslint.json 'web-socket-client/src/*.ts' 'web-socket-client/test/**.test.ts'",
-    "compile": "tsc --project web-socket-client/tsconfig.json"
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" \"bin/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json",
+    "compile": "tsc --project web-socket-client/tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "bin": {
     "ws-client": "./dist/bin/index.js"
   },
@@ -20,11 +28,15 @@
     "@types/yargs": "^17.0.2",
     "crypto": "^1.0.1",
     "elliptic": "^6.5.4",
-    "express": "^4.16.1",
-    "jsrsasign": "^8.0.24",
-    "socket.io": "^4.2.0",
+    "jsrsasign": "^10.4.0",
     "winston": "^3.3.3",
     "ws": "^8.1.0",
     "yargs": "^17.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.9.6",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^4.4.3"
   }
 }

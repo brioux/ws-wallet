@@ -97,29 +97,39 @@ export class WebSocketClient {
       const signature = sign(Buffer.from(sessionId, "hex"),this.keyData).toString(
         "hex",
       );
-      const wsHostUrl = `${this.host}?sessionId=${sessionId}&signature=${signature}&crv=${this.keyData.curve}`;
-      this.log.debug(`${fnTag} Open new WebSocket to host: ${wsHostUrl}`);
-      this.ws = new WebSocket(wsHostUrl);
+      const wsHostUrl = `${this.host}`;
+      this.log.info(`${fnTag} Open new WebSocket to host ${this.host}`);
+      this.log.info(`${fnTag} sessionId: ${sessionId}`);
+      this.log.info(`${fnTag} signature: ${signature}`);
+      const wsOpts = {
+        headers: {
+          signature,
+          sessionId,
+          crv: this.keyData.curve
+        }
+      }
+      this.ws = new WebSocket(this.host,wsOpts);
       await waitForSocketState(this.ws, this.ws.OPEN);
     } catch (error) {
       throw new Error(
         `Error creating web-socket connection to host ${this.host}: ${error}`,
       );
     }
-
+    const { host, keyName, ws, log, keyData } = this;
     this.ws.onerror = function () {
-      //throw new Error('require port for web socket');
+      //log.info(`web-socket connection established`)
     };
     this.ws.onopen = function () {
-      console.log("WebSocket connection established");
+      log.info(`web-socket connection opened with ${host} for key ${keyName}`);
     };
-    const { host, keyName, ws, log, keyData } = this;
+
     this.ws.onclose = function incoming() {
+      log.info(`web-socket connection to ${host} closed for key ${keyName}`)
       console.log(`Web socket connection to ${host} closed for key ${keyName}`);
     };
     this.ws.on("message", function incoming(message: Buffer) {
       const signature = sign(message,keyData);
-      log.debug(`Send signature to web socket server ${ws.url}`);
+      log.info(`Send signature to web socket server ${ws.url}`);
       ws.send(signature);
     });
   }
