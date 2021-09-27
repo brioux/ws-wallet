@@ -27,8 +27,8 @@ function showHelp() {
 
 async function getClient(host, sessionId, args: IClientNewKey) {
   const wsClient = new WsWallet({ host, keyName: args.keyName });
-  const signature = wsClient.getKey(args, sessionId);
-  wsClient.open(sessionId);
+  const signature = await wsClient.getKey(args, sessionId);
+  //wsClient.open(sessionId);
 }
 
 async function generateKey(args: IClientNewKey) {
