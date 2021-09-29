@@ -121,42 +121,35 @@ export class WsWallet {
         'x-pub-key-pem': JSON.stringify(this.keyData.pubKey)
       }
     }
-
-    try {
-      this.ws = new WebSocket(this.host, wsOpts)
-      const { host, keyName, ws, log, keyData } = this
-      this.ws.onopen = function () {
-        log.info(`${fnTag} connection opened to ${host} for key ${keyName}`)
-      }
-      this.ws.on('message', function incoming (digest:Buffer) { // message: WsWalletReq
-        const signature = sign(digest, keyData)
-        // const resp:WsWalletRes = {signature,index: message.index}
-        log.info(`send signature to web socket server ${ws.url}`)
-        ws.send(signature)
-      })
-      this.ws.onclose = function incoming () {
-        log.info(`${fnTag} connection to ${host} closed for key ${keyName}`)
-      }
-      return new Promise(function (resolve, reject) {
-        ws.addEventListener(
-          'open',
-          function incoming () {
-            resolve(sessionSignature)
-          },
-          { once: true }
-        )
-        ws.onerror = function (error) {
-          ws.close()
-          reject(
-            new Error(`error in connection with host ${host}: ${error}`)
-          )
-        }
-      })
-    } catch (error) {
-      this.log.error(
-        `error creating web-socket connection to host ${this.host}: ${error}`
-      )
+    this.ws = new WebSocket(this.host, wsOpts)
+    const { host, keyName, ws, log, keyData } = this
+    this.ws.onopen = function () {
+      log.info(`${fnTag} connection opened to ${host} for key ${keyName}`)
     }
+    this.ws.on('message', function incoming (digest:Buffer) { // message: WsWalletReq
+      const signature = sign(digest, keyData)
+      // const resp:WsWalletRes = {signature,index: message.index}
+      log.info(`${fnTag} send signature to web socket server ${ws.url}`)
+      ws.send(signature)
+    })
+    this.ws.onclose = function incoming () {
+      log.info(`${fnTag} connection to ${host} closed for key ${keyName}`)
+    }
+    return new Promise(function (resolve, reject) {
+      ws.addEventListener(
+        'open',
+        function incoming () {
+          resolve(sessionSignature)
+        },
+        { once: true }
+      )
+      ws.onerror = function (error) {
+        ws.close()
+        reject(
+          new Error(`error connecting to host ${host}: ${error}`)
+        )
+      }
+    })
   }
 
   /**

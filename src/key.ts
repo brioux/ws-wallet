@@ -29,7 +29,7 @@ if (!fs.existsSync(walletPath)) {
 }
 
 export function getKeyPath (keyName) {
-  return path.join(__dirname, `${keyName}.key`)
+  return path.join(walletPath, `${keyName}.key`)
 }
 /**
  * @description will generate a new EC key pair, or throw an error if a key with the requested name already existis.
