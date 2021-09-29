@@ -104,36 +104,29 @@ export class WsWallet {
    */
   async open (sessionId: string): Promise<string> {
     const fnTag = `${this.className}#open`
-    await this.close()
+    this.close()
+
+    // const { pubKeyHex } = KEYUTIL.getKey(this.keyData.pubKey);
+    const sessionSignature = sign(
+      Buffer.from(sessionId, 'hex'),
+      this.keyData
+    ).toString('hex')
+    this.log.info(`${fnTag} open new web-socket to host ${this.host}`)
+    this.log.info(`${fnTag} sessionId: ${sessionId}`)
+    this.log.info(`${fnTag} signature: ${sessionSignature}`)
+    const wsOpts = {
+      headers: {
+        'x-signature': sessionSignature,
+        'x-session-id': sessionId,
+        'x-pub-key-pem': JSON.stringify(this.keyData.pubKey)
+      }
+    }
+
     try {
-      // const { pubKeyHex } = KEYUTIL.getKey(this.keyData.pubKey);
-      const sessionSignature = sign(
-        Buffer.from(sessionId, 'hex'),
-        this.keyData
-      ).toString('hex')
-      this.log.info(`${fnTag} open new web-socket to host ${this.host}`)
-      this.log.info(`${fnTag} sessionId: ${sessionId}`)
-      this.log.info(`${fnTag} signature: ${sessionSignature}`)
-      const wsOpts = {
-        headers: {
-          'x-signature': sessionSignature,
-          'x-session-id': sessionId,
-          'x-pub-key-pem': JSON.stringify(this.keyData.pubKey)
-        }
-      }
       this.ws = new WebSocket(this.host, wsOpts)
-      await waitForSocketState(this.ws, this.ws.OPEN)
       const { host, keyName, ws, log, keyData } = this
-      this.ws.onerror = function (error) {
-        log.error(`${fnTag} error in connection with host ${this.host}: ${error}`)
-        ws.close()
-      }
       this.ws.onopen = function () {
         log.info(`${fnTag} connection opened to ${host} for key ${keyName}`)
-      }
-
-      this.ws.onclose = function incoming () {
-        log.info(`${fnTag} connection to ${host} closed for key ${keyName}`)
       }
       this.ws.on('message', function incoming (digest:Buffer) { // message: WsWalletReq
         const signature = sign(digest, keyData)
@@ -141,9 +134,26 @@ export class WsWallet {
         log.info(`send signature to web socket server ${ws.url}`)
         ws.send(signature)
       })
-      return sessionSignature
+      this.ws.onclose = function incoming () {
+        log.info(`${fnTag} connection to ${host} closed for key ${keyName}`)
+      }
+      return new Promise(function (resolve, reject) {
+        ws.addEventListener(
+          'open',
+          function incoming () {
+            resolve(sessionSignature)
+          },
+          { once: true }
+        )
+        ws.onerror = function (error) {
+          ws.close()
+          reject(
+            new Error(`error in connection with host ${host}: ${error}`)
+          )
+        }
+      })
     } catch (error) {
-      throw new Error(
+      this.log.error(
         `error creating web-socket connection to host ${this.host}: ${error}`
       )
     }
@@ -155,7 +165,6 @@ export class WsWallet {
   async close (): Promise<void> {
     if (this.ws) {
       this.ws.close()
-      await waitForSocketState(this.ws, this.ws.CLOSED)
     }
   }
 
@@ -186,10 +195,11 @@ function sign (digest: Buffer, keyData: KeyData): Buffer {
 
 /**
  * Forces a process to wait until the socket's `readyState` becomes the specified value.
+ * not to be used in production !!!
  * @param socket The socket whose `readyState` is being watched
  * @param state The desired `readyState` for the socket
  */
-function waitForSocketState (
+export function waitForSocketState (
   socket: WebSocket,
   state: number
 ): Promise<void> {

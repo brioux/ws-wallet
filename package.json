@@ -1,6 +1,6 @@
 {
   "name": "ws-wallet",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "node.js crypto wallet for signing series of transactions (e.g., invitation based fabric network) using web-sockets",
   "author": "Betrand Rioux <bertrand.roiux@gmail.com>",
   "main": "./dist/src/index.js",
