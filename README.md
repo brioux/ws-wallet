@@ -4,7 +4,7 @@ This project provides a simple CLI to establish web-socket connection used by a 
 
 ## Key-types
 
-The wallet is currently configured to issues ECDSA keypairs of type p256 and p384 (secp256r1/secp384r1)
+The wallet issues ECDSA keypairs of type p256 and p384 (secp256r1/secp384r1)
 
 ## Development setup
 * Download dependencies
@@ -17,6 +17,7 @@ npm install
 npm run build
 ```
 
-* Expose CLI command (ws-wallet)
+* Expose CLI command (see ws-wallet --help)
 ```
 npm run local
+```
