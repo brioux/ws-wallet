@@ -25,8 +25,8 @@ npm run local
 Usage: ws-wallet
 new-key <keyname> [<curve>]	            Generate a new key with optional curve: 'p256' | 'p384'
 get-pkh <keyname>          	            Get publick key hex of keyname
-connect <host> <sessionId> [<keyname>] 	connect sessionId with host of web socket server. 
-                                         keyname optional (use default)
+connect <host> <sessionId> [<keyname>] 	connect to ws-identity server host using sessionId 
+                                        pubKeyHex used to generate sessionId must match pubKeyHex of keyname
 
 
 Options:
