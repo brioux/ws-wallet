@@ -5,11 +5,10 @@ import { keyGen, getPubKeyHex, listKeys, IClientNewKey } from '../src/key';
 let usage = '\nUsage: ws-wallet\n';
 usage +=
   '\tnew-key <keyname> [<curve>]\t' +
-  "Generate a new key with optional curve: 'p256' | 'p384'\n";
-usage += '\tget-pkh <keyname>          \t' + 'Get publick key hex of keyname\n';
-usage +=
-  '\tconnect <host> <sessionId> [<keyname>] \t' +
-  'connect sessionId with host of web socket server. keyname optional (use default)\n';
+  "\tGenerate new key with curve: 'p256' | 'p384'\n";
+usage += '\tget-pkh <keyname>\t' + '\t\tGet publick key hex of keyname\n';
+usage += '\tconnect <host> <keyname> [<sslStrict>] \t' + 'Connect to ws-identity server\n'; 
+usage += '...      \t \t \t use sslStric for testing with unverified ssl/tls certificates\n';
 
 function showHelp() {
   console.log(usage);
@@ -25,9 +24,10 @@ function showHelp() {
   );
 }
 
-async function getClient(host, sessionId, args: IClientNewKey) {
-  const wsClient = new WsWallet({ host, keyName: args.keyName });
-  const signature = await wsClient.getKey(args, sessionId);
+async function getClient(endpoint,args: IClientNewKey,strictSSL?:boolean) {
+  const wsClient = new WsWallet({ endpoint, keyName: args.keyName, strictSSL});
+  const signature = await wsClient.open();
+  //const signature = await wsClient.getKey(args);
   //wsClient.open(sessionId);
 }
 

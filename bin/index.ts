@@ -12,17 +12,18 @@ const options = yargs
   })
   .help(true).argv;
 
-if (yargs.argv._[0] === null) {
-  utils.showHelp();
-} else if (yargs.argv.k) {
-  utils.listKeys();
+if (yargs.argv.k) {
+  console.log(utils.listKeys().join('\n'));
 } else if (yargs.argv._[0] === 'new-key') {
   utils.generateKey({ keyName: yargs.argv._[1], curve: yargs.argv._[2] });
 } else if (yargs.argv._[0] === 'get-pkh') {
   console.log(utils.getPubKeyHex(yargs.argv._[1]));
 } else if (yargs.argv._[0] === 'connect') {
-  utils.getClient(yargs.argv._[1], yargs.argv._[2], {
-    keyName: yargs.argv._[3],
-    curve: yargs.argv._[4],
-  });
+  utils.getClient(
+    yargs.argv._[1], 
+    {keyName: yargs.argv._[2]},
+    eval(yargs.argv._[3])
+  );
+} else {
+  utils.showHelp();
 }

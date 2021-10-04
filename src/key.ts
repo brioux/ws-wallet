@@ -79,4 +79,5 @@ export function listKeys () {
     const tmp = file.split('.')
     if (tmp[1] === 'key') keys.push(tmp[0])
   })
+  return keys
 }

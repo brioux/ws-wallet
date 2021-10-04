@@ -1,6 +1,6 @@
 # web-socket wallet
 
-This project provides a simple CLI to establish web-socket connection used by a a crypto wallet to receive, sign and return digests. 
+This project provides a simple CLI to establish web-socket connection with the [ws-identity](https://github.com/brioux/ws-identity) to receive, sign and return digests.
 
 ## Key-types
 
@@ -21,15 +21,24 @@ npm run build
 ```
 npm run local
 ```
+
+## commands
+### create a new key
+```bash
+ws-wallet new-key [keyname] [curve type: p256 | p384]
 ```
-Usage: ws-wallet
-new-key <keyname> [<curve>]	            Generate a new key with optional curve: 'p256' | 'p384'
-get-pkh <keyname>          	            Get publick key hex of keyname
-connect <host> <sessionId> [<keyname>] 	connect to ws-identity server host using sessionId 
-                                        pubKeyHex used to generate sessionId must match pubKeyHex of keyname
+### get pub-key-hex
+```bash
+ws-wallet get-pkh [keyname]
+```
+### Open connection to ws-identity server
+```bash
+ws-wallet connect [url] [key-name] ([strict-ssl])
+```
+requires:
+* [url] of the ws-identity host (e.g., 'http://localhost:8700')
+* [key-name] of local keyfile with pub-key-hex addresss used to request new session ID
+* [strict-ssl] can be set to false when testing ssl/tls enabled ws-identity server
 
-
-Options:
-      --version  Show version number                              
-  -k, --keys     List all key names                               
-      --help     Show help                                        
+Requests a new session Id from the ws-idenity. 
+Outputs the session Id and signature as API keys to access the ws-identity server and open connction to ws-wallet from the desired application
